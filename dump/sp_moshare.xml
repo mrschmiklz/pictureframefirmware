@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="is_show_guide" value="true" />
+    <boolean name="first_boot" value="false" />
+    <boolean name="is_show_guide_image" value="true" />
+    <string name="vuid_cert_file">eyJiYXRjaFNuIjoiZjM1M2IwYWItNjhlYi00YWI3LTkxZDUtOThkM2NkMGYzNDlkIiwidmVyc2lvbiI6InYxLjAuMCIsInRpbWVzdGFtcCI6MTcyOTY4NzE1MDI2OSwidHlwZSI6MX0=.YCuxZ9RGUcpvuHC8zTfWYUZilPLLx1CM2HCqGE4lKzC3+vClDeK8mdt/DKv2+fVOJM3l3QvIG1vuQgwOp+eyZL13RdpR9+HX9iFQW+UMKFnac/ymzuKmAmsAKa0Uo5kca5lOusrU4eKYd2bGKoK6AoTVsqu3ZwLbUhLki3qTvYcRoISJJcdle7AD1ULhUjD1RDL4eoFbop7B+XOlRe8ThYm8t1U4sUkFDamJmIKnA5BNbSlcarj2pF21si+yGFLE21WXzs0hauXXv5DMT5vbLLASovJSRX4XQc+4DBG8AKOYgZp56LMxSJYsXaSVVlVQ6fYwGSagF6Hc4TL4sv/tQbOHhnl5Sb+PZDManwBhdT0cKBsfFUIxABBi93Wy9C/R2kmmDgMu1jHj4BbZJ1/cTIcd2uxhEojgw8o5rJZhC7WUPANF3HhPvH6J2lU+ypDvkrjn+HBVgrlNKwihILbrDA==</string>
+    <long name="start_up_time" value="141854" />
+    <boolean name="is_show_guide_empty" value="true" />
+    <string name="device_uid_file">3825889e80484c40bc87aa1c044ebec4</string>
+    <string name="vuid_file">PF10090019014351</string>
+    <int name="last_stream_notification_level" value="5" />
+</map>

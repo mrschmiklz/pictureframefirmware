@@ -1,0 +1,46 @@
+; Allwinner AEEZO picture frame (VID_1F3A PID_1007) WinUSB ADB driver.
+[Version]
+Signature   = "$Windows NT$"
+Class       = AndroidUsbDeviceClass
+ClassGuid   = {3F966BD9-FA04-4ec5-991C-D326973B5128}
+Provider    = %ProviderName%
+DriverVer   = 06/01/2026,1.0.0.0
+CatalogFile =
+
+[Manufacturer]
+%ProviderName% = FrameVendor, NTamd64, NTx86
+
+[FrameVendor.NTx86]
+%CompositeAdbInterface% = USB_Install, USB\VID_1F3A&PID_1007&MI_01
+%SingleAdbInterface%    = USB_Install, USB\VID_1F3A&PID_1007
+
+[FrameVendor.NTamd64]
+%CompositeAdbInterface% = USB_Install, USB\VID_1F3A&PID_1007&MI_01
+%SingleAdbInterface%    = USB_Install, USB\VID_1F3A&PID_1007
+
+[USB_Install]
+Include = winusb.inf
+Needs   = WINUSB.NT
+
+[USB_Install.Services]
+Include    = winusb.inf
+AddService = WinUSB,0x00000002,WinUSB_ServiceInstall
+
+[WinUSB_ServiceInstall]
+DisplayName   = %WinUSB_SvcDesc%
+ServiceType   = 1
+StartType     = 3
+ErrorControl  = 1
+ServiceBinary = %12%\WinUSB.sys
+
+[USB_Install.HW]
+AddReg = Dev_AddReg
+
+[Dev_AddReg]
+HKR,,DeviceInterfaceGUIDs,0x10000,"{F72FE0D4-CBCB-407d-8814-9ED673D0DD6B}"
+
+[Strings]
+ProviderName          = "Picture Frame"
+SingleAdbInterface    = "Android ADB Interface"
+CompositeAdbInterface = "Android Composite ADB Interface"
+WinUSB_SvcDesc        = "Picture Frame WinUSB"

@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="is_show_guide" value="false" />
+    <boolean name="is_show_guide_image" value="false" />
+    <boolean name="is_show_guide_empty" value="false" />
+    <boolean name="first_boot" value="false" />
+    <long name="start_up_time" value="3000" />
+</map>

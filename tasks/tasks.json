@@ -1,0 +1,7 @@
+{
+  "title": "Today",
+  "tasks": [
+    { "id": "1", "text": "Example: pick up groceries", "done": false },
+    { "id": "2", "text": "Example: reply to email", "done": true }
+  ]
+}

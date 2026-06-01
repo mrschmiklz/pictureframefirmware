@@ -1,0 +1,42 @@
+# Local config (copy from frame.conf.example)
+scripts/frame.conf
+
+# Secrets
+.env
+.env.*
+tasks/credentials.json
+tasks/google_config.json
+**/credentials.json
+
+# Large binaries (install rclone separately; see README)
+tools/rclone-v1.74.2-linux-arm/
+tools/rclone-arm.zip
+
+# Boot build artifacts (regenerated from NAS boot.png)
+boot/part0/
+boot/work/
+boot/bootanimation.zip
+boot/boot.custom.img
+boot/launcher_aimor.patched.apk
+boot/launcher_aimor.signed.apk
+boot/source.png
+
+# Pulled device dumps (large; pull from your frame if needed)
+dump/*.apk
+dump/*.db
+dump/aimor_unzip/
+
+# Downloaded Google USB driver bundle (custom .inf is kept)
+boot/tools/usb_driver/usb_driver/
+
+# Local photo staging
+framepics/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db

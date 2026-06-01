@@ -1,0 +1,8 @@
+{
+  "credentials_file": "credentials.json",
+  "tasklist_id": "@default",
+  "include_no_due_date": true,
+  "include_overdue": true,
+  "max_tasks": 8,
+  "ui_port": 8765
+}

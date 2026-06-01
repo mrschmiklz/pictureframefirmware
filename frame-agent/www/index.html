@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Frame Boot Console</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 1rem; background: #0f1419; color: #e8eef5; }
+    h1 { font-size: 1.2rem; }
+    .row { display: flex; gap: .5rem; flex-wrap: wrap; margin: .75rem 0; }
+    input, button, select { padding: .45rem .6rem; border-radius: 6px; border: 1px solid #334; background: #1a2330; color: inherit; }
+    button { cursor: pointer; background: #2563eb; border-color: #2563eb; }
+    pre, textarea { width: 100%; min-height: 220px; background: #111820; padding: .75rem; border-radius: 8px; overflow: auto; }
+    .muted { color: #9fb0c3; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <h1>Picture Frame Boot Console</h1>
+  <p class="muted">Wi-Fi LAN access to boot/system files. Append <code>?token=YOUR_TOKEN</code> to API calls.</p>
+  <div class="row">
+    <input id="token" placeholder="token" value="frame-local" />
+    <button onclick="loadStatus()">Status</button>
+    <button onclick="loadList()">List</button>
+    <button onclick="installSplash()">Install splash</button>
+    <button onclick="rebootFrame()">Reboot</button>
+  </div>
+  <div class="row">
+    <input id="path" value="/system/media" style="flex:1" />
+    <button onclick="loadList()">Browse</button>
+    <button onclick="readFile()">Read</button>
+  </div>
+  <div class="row">
+    <input id="uploadPath" value="/sdcard/upload.bin" style="flex:1" />
+    <input id="file" type="file" />
+    <button onclick="uploadFile()">Upload</button>
+  </div>
+  <pre id="out">Ready.</pre>
+  <script>
+    function qs(extra) {
+      const token = encodeURIComponent(document.getElementById('token').value || 'frame-local');
+      return extra + (extra.includes('?') ? '&' : '?') + 'token=' + token;
+    }
+    async function api(path, opts) {
+      const res = await fetch(path, opts);
+      const text = await res.text();
+      document.getElementById('out').textContent = text;
+      return text;
+    }
+    function loadStatus() { api('/cgi-bin/status.cgi' + qs('?')); }
+    function loadList() {
+      const p = encodeURIComponent(document.getElementById('path').value);
+      api('/cgi-bin/list.cgi' + qs('?path=' + p));
+    }
+    async function readFile() {
+      const p = encodeURIComponent(document.getElementById('path').value);
+      const raw = await api('/cgi-bin/read.cgi' + qs('?path=' + p));
+      try {
+        const j = JSON.parse(raw);
+        if (j.data_base64) {
+          document.getElementById('out').textContent = atob(j.data_base64);
+        }
+      } catch (e) {}
+    }
+    async function uploadFile() {
+      const f = document.getElementById('file').files[0];
+      if (!f) return alert('Choose a file');
+      const p = encodeURIComponent(document.getElementById('uploadPath').value);
+      const buf = await f.arrayBuffer();
+      await api('/cgi-bin/write.cgi' + qs('?path=' + p), { method: 'POST', body: buf });
+    }
+    function installSplash() { api('/cgi-bin/install_splash.cgi' + qs('?')); }
+    function rebootFrame() {
+      if (confirm('Reboot frame?')) api('/cgi-bin/reboot.cgi' + qs('?'));
+    }
+    loadStatus();
+  </script>
+</body>
+</html>
