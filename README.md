@@ -4,21 +4,28 @@ Custom tooling for the **AEEZO / YHK PF109** — a cheap Chinese Android picture
 
 ## Why this exists
 
-The stock workflow for adding photos is ridiculous: copy images to a **USB stick**, plug it into the frame, hope it mounts, maybe dig through menus or a phone app, and repeat whenever you want new pictures. Some models want you to email photos to a cloud service owned by the vendor. For a device sitting on your wall in your house.
+The stock workflow for adding photos is ridiculous: copy images to a **USB stick**, plug it into the frame, hope it mounts, maybe dig through menus or a phone app, and repeat whenever you want new pictures. Want Grandma’s birthday on the wall? Better find that micro‑USB cable and a stick you haven’t formatted since 2019.
 
-This project replaces that with something sane:
+Or — and this is the modern “convenience” option — **email your family photos to a vendor’s cloud**. Upload them to someone else’s server. Create an account. Accept the privacy policy you didn’t read. Trust that a white‑label frame maker in Shenzhen will still be operating their API in five years. Pay no one, yet somehow *you* are the product shuffling JPEGs through their pipeline so a $40 Android slab on your mantle can show pictures that were **already on your network**.
+
+It’s a picture frame. In your house. On your Wi‑Fi. The photos are yours. The cloud is not required. Shockingly.
+
+This project replaces all of that with something sane:
 
 - Drop photos in a folder on your **NAS** (`\\your-nas\nas\framepics`)
-- The frame **pulls them over Wi‑Fi** every few minutes
-- No USB stick shuffle, no cloud account, no outbound internet after setup
+- The frame **pulls them over Wi‑Fi** every few minutes — LAN only, like civilized people
+- No USB stick shuffle, no cloud account, no “please verify your email to view your own children”
+- **Firewall blocks outbound internet** after setup — the frame can see your NAS and nothing else
 - Manage the frame remotely over **Wi‑Fi ADB** once you’ve done a one-time USB setup
+
+Your photos stay on your NAS. Your frame stays on your LAN. The vendor’s cloud can go touch grass.
 
 So here we are.
 
 ## Features
 
 - **NAS photo sync** — mirror a Samba share to the Aimor slideshow folder
-- **LAN-only firewall** — block outbound internet, keep local network access
+- **LAN-only firewall** — block outbound internet; your frame doesn’t need to phone home to Shenzhen
 - **Persistent boot hook** — Wi‑Fi ADB, firewall, and sync survive reboot
 - **Custom boot splash** — build from a single `boot.png` (Android animation + Aimor backgrounds)
 - **Wi‑Fi management** — ADB over Wi‑Fi and NAS command queue (no USB after setup)
