@@ -2,7 +2,8 @@
 param(
     [string]$Adb = "",
     [switch]$SkipSplash,
-    [switch]$SkipReboot
+    [switch]$SkipReboot,
+    [switch]$SkipDetect
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,12 +18,17 @@ function Test-IsAdmin {
 }
 
 function Ensure-UsbDriver {
+    param([string[]]$VidPidPatterns = @("VID_1F3A&PID_1007"))
+
     if (-not (Test-Path $DriverInf)) {
         Write-Host "WARN: driver inf missing, skipping driver install"
         return
     }
 
-    $frame = Get-PnpDevice | Where-Object { $_.InstanceId -match "VID_1F3A&PID_1007" }
+    $frame = @()
+    foreach ($pattern in $VidPidPatterns) {
+        $frame += Get-PnpDevice | Where-Object { $_.InstanceId -match $pattern }
+    }
     if (-not $frame) {
         Write-Host "Frame not on USB - plug in USB cable to continue"
         return
@@ -37,11 +43,12 @@ function Ensure-UsbDriver {
         $argList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $PSCommandPath)
         if ($SkipSplash) { $argList += "-SkipSplash" }
         if ($SkipReboot) { $argList += "-SkipReboot" }
+        if ($SkipDetect) { $argList += "-SkipDetect" }
         $proc = Start-Process powershell.exe -Verb RunAs -ArgumentList $argList -PassThru
         $proc.WaitForExit(60000) | Out-Null
         if (-not $proc.HasExited) {
             $proc.Kill()
-            throw "UAC prompt timed out. Right-click SETUP_FRAME.cmd and choose Run as administrator."
+            throw "UAC prompt timed out. Right-click setup.cmd and choose Run as administrator."
         }
         exit $proc.ExitCode
     }
@@ -51,11 +58,19 @@ function Ensure-UsbDriver {
     Start-Sleep 3
 }
 
-. (Join-Path $Scripts "frame_adb.ps1")
+. (Join-Path $Scripts "frame_lib.ps1")
 $Adb = Get-FrameAdbPath -Preferred $Adb
 $cfg = Get-FrameConfig
+$profilePreview = Resolve-FrameDeviceProfile -PreferredId $cfg.DeviceProfile
+$vidPatterns = @("VID_1F3A&PID_1007")
+if ($profilePreview.Profile.match.usb_vid_pid) {
+    $vidPatterns = @($profilePreview.Profile.match.usb_vid_pid | ForEach-Object {
+        $parts = $_ -split ':'
+        if ($parts.Count -eq 2) { "VID_$($parts[0])&PID_$($parts[1])" } else { $_ }
+    })
+}
 
-Ensure-UsbDriver
+Ensure-UsbDriver -VidPidPatterns $vidPatterns
 
 Write-Host ""
 Write-Host "=== Step 1/6: Connect ADB ==="
@@ -74,6 +89,16 @@ while ((Get-Date) -lt $deadline) {
     }
 }
 if (-not $serial) { throw "Could not connect to frame over USB or Wi-Fi ADB" }
+
+if (-not $SkipDetect) {
+    $detect = Update-FrameConfigFromDevice -Adb $Adb -Serial $serial -WriteConfig
+    $cfg = $detect.Config
+    Show-FrameDetectionReport -Detection $detect.Detection
+    if (-not $SkipSplash -and -not $detect.Detection.Profile.device.splash_patch) {
+        Write-Host "Skipping splash for this device profile (splash_patch=false)."
+        $SkipSplash = $true
+    }
+}
 
 Write-Host ""
 Write-Host "=== Step 2/6: Deploy NAS sync tools ==="
@@ -107,7 +132,8 @@ Invoke-FrameAdb -Adb $Adb -Serial $serial -Args @("connect", "$($cfg.FrameIp):$(
 
 Write-Host ""
 Write-Host "Setup complete."
-Write-Host "  Photos: drop in \\$($cfg.NasHost)\nas\framepics"
+Write-Host "  Device:  $($cfg.DeviceProfile)"
+Write-Host "  Photos: drop in \\$($cfg.NasHost)\$($cfg.NasShare)\$($cfg.NasPhotosPath)"
 Write-Host "  Updates: run publish_to_nas.ps1 after changing boot.png or scripts"
 Write-Host "  Test:    powershell -ExecutionPolicy Bypass -File scripts\test_frame.ps1"
 

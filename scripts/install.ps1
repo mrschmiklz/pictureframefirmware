@@ -5,18 +5,22 @@ param(
 
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
-$Rclone = Join-Path $Root "tools\rclone-v1.74.2-linux-arm\rclone"
 
-. (Join-Path $PSScriptRoot "frame_adb.ps1")
+. (Join-Path $PSScriptRoot "frame_lib.ps1")
 $Adb = Get-FrameAdbPath -Preferred $Adb
 $cfg = Get-FrameConfig
 
-if (-not (Test-Path $Rclone)) {
-    throw "rclone not found at $Rclone"
-}
-
 $serial = Connect-FrameDevice -Adb $Adb -Ip $cfg.FrameIp -Port $cfg.FrameAdbPort
 Write-Host "Connected: $serial"
+
+$detection = Update-FrameConfigFromDevice -Adb $Adb -Serial $serial -WriteConfig
+$profile = $detection.Detection.Profile
+Show-FrameDetectionReport -Detection $detection.Detection
+
+$Rclone = Get-FrameRclonePath -Profile $profile -Root $Root
+if (-not (Test-Path $Rclone)) {
+    throw "rclone not found at $Rclone (profile arch: $($profile.device.rclone_arch)). Download from https://rclone.org/downloads/"
+}
 
 Write-Host "Creating /data/local/frame-sync on frame..."
 & $Adb -s $serial shell "mkdir -p /data/local/frame-sync/bin"

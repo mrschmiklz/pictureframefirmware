@@ -1,20 +1,14 @@
 # One-time install: firewall + NAS sync survive reboot via the stock setmacaddr boot hook.
 param(
-    [string]$Adb = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Google.PlatformTools_Microsoft.Winget.Source_8wekyb3d8bbwe\platform-tools\adb.exe"
+    [string]$Adb = ""
 )
 
 $ErrorActionPreference = "Stop"
 $scriptDir = $PSScriptRoot
-$Root = Split-Path -Parent $scriptDir
 
-if (-not (Test-Path $Adb)) {
-    throw "adb not found at $Adb"
-}
-
-$state = & $Adb get-state 2>&1
-if ($state -ne "device") {
-    throw "Frame not connected over ADB."
-}
+. (Join-Path $scriptDir "frame_lib.ps1")
+$Adb = Get-FrameAdbPath -Preferred $Adb
+$serial = Connect-FrameDevice -Adb $Adb
 
 Write-Host "Step 1/3: Deploy frame-sync scripts..."
 & (Join-Path $scriptDir "install.ps1") -Adb $Adb
@@ -25,14 +19,14 @@ $scriptNames = @(
     "process_nas_console.sh", "start_agent.sh"
 )
 foreach ($name in $scriptNames) {
-    & $Adb push (Join-Path $scriptDir $name) "/data/local/frame-sync/$name"
+    Invoke-FrameAdb -Adb $Adb -Serial $serial -Args @("push", (Join-Path $scriptDir $name), "/data/local/frame-sync/$name")
 }
-& $Adb shell "chmod 755 /data/local/frame-sync/block_wan.sh /data/local/frame-sync/boot.sh /data/local/frame-sync/install_from_nas.sh /data/local/frame-sync/install_splash.sh /data/local/frame-sync/restore_usb_adb.sh"
+Invoke-FrameAdb -Adb $Adb -Serial $serial -Args @("shell", "chmod 755 /data/local/frame-sync/block_wan.sh /data/local/frame-sync/boot.sh /data/local/frame-sync/install_from_nas.sh /data/local/frame-sync/install_splash.sh /data/local/frame-sync/restore_usb_adb.sh")
 
 Write-Host "Step 3/3: Install boot hook on /system (backs up stock setmacaddr)..."
 $wrapperLocal = Join-Path $env:TEMP "setmacaddr_frame_wrapper"
 Copy-Item (Join-Path $scriptDir "setmacaddr_wrapper.sh") $wrapperLocal -Force
-& $Adb push $wrapperLocal /data/local/frame-sync/setmacaddr_wrapper.sh
+Invoke-FrameAdb -Adb $Adb -Serial $serial -Args @("push", $wrapperLocal, "/data/local/frame-sync/setmacaddr_wrapper.sh")
 Remove-Item $wrapperLocal -Force
 
 $installCmd = @'
@@ -52,7 +46,7 @@ fi
 echo INSTALLED
 '@ -replace "`r`n", "`n"
 
-& $Adb shell $installCmd
+Invoke-FrameAdb -Adb $Adb -Serial $serial -Args @("shell", $installCmd)
 
 Write-Host ""
 Write-Host "Persistent install complete."

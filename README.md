@@ -1,6 +1,8 @@
 # Picture Frame Firmware Tools
 
-Custom tooling for the **AEEZO / YHK PF109** — a cheap Chinese Android picture frame (Allwinner A33, 1280×800, Android 6).
+Turn cheap **Android digital picture frames** into LAN-first photo displays: NAS sync, outbound firewall, Wi‑Fi management — no USB stick shuffle, no vendor cloud.
+
+**Primary tested device:** AEEZO / YHK PF109 (Allwinner A33, Android 6, Aimor app). Many white-label Aimor frames should work with auto-detection. See [docs/compatibility.md](docs/compatibility.md).
 
 ## Why this exists
 
@@ -12,7 +14,7 @@ It’s a picture frame. In your house. On your Wi‑Fi. The photos are yours. Th
 
 This project replaces all of that with something sane:
 
-- Drop photos in a folder on your **NAS** (`\\your-nas\nas\framepics`)
+- Drop photos in a folder on your **NAS** (`\\your-nas\nas\framepics` or `//your-nas/nas/framepics`)
 - The frame **pulls them over Wi‑Fi** every few minutes — LAN only, like civilized people
 - No USB stick shuffle, no cloud account, no “please verify your email to view your own children”
 - **Firewall blocks outbound internet** after setup — the frame can see your NAS and nothing else
@@ -24,39 +26,78 @@ So here we are.
 
 ## Features
 
-- **NAS photo sync** — mirror a Samba share to the Aimor slideshow folder
+- **Auto device detection** — profiles for PF109, generic Aimor, Allwinner, and fallback Android frames
+- **Cross-platform host tools** — Windows, macOS, and Linux entry points
+- **One-click setup** — wizard writes config, detects IP, deploys sync + firewall
+- **NAS photo sync** — mirror a Samba share to the slideshow folder
 - **LAN-only firewall** — block outbound internet; your frame doesn’t need to phone home to Shenzhen
 - **Persistent boot hook** — Wi‑Fi ADB, firewall, and sync survive reboot
 - **Custom boot splash** — build from a single `boot.png` (Android animation + Aimor backgrounds)
 - **Wi‑Fi management** — ADB over Wi‑Fi and NAS command queue (no USB after setup)
 
-## Quick start
+## Quick start (one click)
 
-1. Copy `scripts/frame.conf.example` to `scripts/frame.conf` and set your frame IP + NAS paths.
-2. Download [rclone for Linux ARM](https://rclone.org/downloads/) into `tools/rclone-v1.74.2-linux-arm/rclone`.
-3. Plug in USB once, install the driver (`scripts/INSTALL_DRIVER.cmd` as admin), then run `scripts/SETUP_FRAME.cmd`.
-4. After setup, connect over Wi‑Fi only:
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File scripts/connect_frame.ps1
-   ```
+### Windows
+
+1. Install [Android platform-tools](https://developer.android.com/tools/releases/platform-tools) (`winget install Google.PlatformTools`).
+2. Download [rclone linux-arm](https://rclone.org/downloads/) → `tools/rclone-v1.74.2-linux-arm/rclone`.
+3. Plug frame into USB, double-click **`setup.cmd`** (click Yes on UAC for the Allwinner driver).
+4. Drop photos in your NAS `framepics` folder. Done.
+
+### macOS / Linux
+
+1. Install adb: `brew install --cask android-platform-tools` or `sudo apt install adb`.
+2. Download rclone (linux-arm) into `tools/rclone-v1.74.2-linux-arm/rclone`.
+3. `chmod +x setup.sh scripts/*.sh` then **`./setup.sh`** with USB connected.
+4. For persistent boot hook + Aimor splash, run **`setup.cmd` on Windows once** or use Wi‑Fi ADB after a Windows setup.
+
+### After setup (any OS)
+
+```powershell
+# Windows
+powershell -ExecutionPolicy Bypass -File scripts\connect_frame.ps1
+powershell -ExecutionPolicy Bypass -File scripts\test_frame.ps1
+```
+
+```bash
+# macOS / Linux
+bash scripts/connect.sh
+bash scripts/test.sh
+```
+
+### Manual config (optional)
+
+Copy `scripts/frame.conf.example` → `scripts/frame.conf`, or let setup auto-detect:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\frame_detect.ps1 -WriteConfig
+```
+
+```bash
+bash scripts/frame_detect.sh --write-config
+```
 
 ## Key scripts
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/SETUP_FRAME.cmd` | One-time full setup (USB) |
-| `scripts/connect_frame.ps1` | Connect Wi-Fi ADB |
+| **`setup.cmd`** / **`setup.sh`** | One-click wizard + full setup |
+| `scripts/frame_detect.ps1` / `.sh` | Auto-detect frame model + write config |
+| `scripts/connect_frame.ps1` / `connect.sh` | Connect Wi-Fi ADB |
 | `scripts/publish_to_nas.ps1` | Push updates to NAS for OTA deploy |
 | `scripts/queue_nas_command.ps1` | Queue Wi-Fi commands via NAS |
 | `scripts/recover_frame.ps1` | Restore stock launcher if boot issues |
-| `scripts/test_frame.ps1` | Health check |
+| `scripts/test_frame.ps1` / `test.sh` | Health check |
+
+Device profiles: **`config/devices.json`**. Compatibility details: **[docs/compatibility.md](docs/compatibility.md)**.
 
 ## Hardware notes
 
 - Common white-label frame: **AEEZO / YHK PF109**, Allwinner A33, Android 6.0.1 eng build.
-- Frame Wi‑Fi IP may change (check router or `adb shell ip addr show wlan0`).
-- This device’s BusyBox has no `httpd`; use **Wi‑Fi ADB** or the **NAS command queue** for remote access.
-- Stock launcher APK can be pulled once with `adb pull /system/priv-app/launcher_aimor/launcher_aimor.apk dump/`.
+- Similar frames often ship **Aimor** (`com.efercro.os.aimor`) with the same NAS sync paths.
+- Frame Wi‑Fi IP may change — setup auto-detects it; check router or `adb shell ip addr show wlan0`.
+- BusyBox on these frames often has **no `httpd`**; use **Wi‑Fi ADB** or the **NAS command queue**.
+- Stock launcher APK: `adb pull /system/priv-app/launcher_aimor/launcher_aimor.apk dump/`
 
 ## What’s not in this repo
 

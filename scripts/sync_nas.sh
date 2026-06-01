@@ -5,8 +5,6 @@ SYNC_HOME=/data/local/frame-sync
 CONFIG="$SYNC_HOME/nas.conf"
 RCLONE="$SYNC_HOME/bin/rclone"
 LOG="$SYNC_HOME/sync.log"
-DB=/data/data/com.efercro.os.aimor/databases/db_aimor.db
-AIMOR=com.efercro.os.aimor
 
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') $1" >> "$LOG"
@@ -18,6 +16,12 @@ load_config() {
         exit 1
     fi
     . "$CONFIG"
+    AIMOR_PKG=${AIMOR_PKG:-com.efercro.os.aimor}
+    AIMOR_DB=${AIMOR_DB:-/data/data/$AIMOR_PKG/databases/db_aimor.db}
+    PHOTO_WIDTH=${PHOTO_WIDTH:-1280}
+    PHOTO_HEIGHT=${PHOTO_HEIGHT:-800}
+    DB="$AIMOR_DB"
+    AIMOR="$AIMOR_PKG"
 }
 
 wait_for_network() {
@@ -58,7 +62,7 @@ register_new_files() {
         [ "$count" = "0" ] || continue
 
         media_path="/storage/emulated/0/aimor/image/$name"
-        sqlite3 "$DB" "INSERT INTO MEDIA_BEAN (DEST_FILE_NAME,MEDIA_TYPE,IS_DISPLAY,TITLE,U_ID,MEDIA_PATH,IS_AUTO_PLAY,DURATION,MUTE,SCALE_TYPE,MAX_SCALE,MIN_SCALE,M_MULTIPLE,FOCUS_X,FOCUS_Y,TAKEN_PIC_TIME,UPLOAD_TIME,UPLOAD_TIME_LONG,PHOTO_WIDTH,PHOTOHEIGHT,LIKED,GROUP_LABEL) VALUES ('$esc_name',0,0,'$esc_name',0,'$media_path',0,0.0,0,1,1.0,1.0,1.0,0.5,0.5,$now_ms,'$upload_time',$now_ms,1280.0,800.0,0,'');"
+        sqlite3 "$DB" "INSERT INTO MEDIA_BEAN (DEST_FILE_NAME,MEDIA_TYPE,IS_DISPLAY,TITLE,U_ID,MEDIA_PATH,IS_AUTO_PLAY,DURATION,MUTE,SCALE_TYPE,MAX_SCALE,MIN_SCALE,M_MULTIPLE,FOCUS_X,FOCUS_Y,TAKEN_PIC_TIME,UPLOAD_TIME,UPLOAD_TIME_LONG,PHOTO_WIDTH,PHOTOHEIGHT,LIKED,GROUP_LABEL) VALUES ('$esc_name',0,0,'$esc_name',0,'$media_path',0,0.0,0,1,1.0,1.0,1.0,0.5,0.5,$now_ms,'$upload_time',$now_ms,$PHOTO_WIDTH,$PHOTO_HEIGHT,0,'');"
         log "registered $name"
     done
 }

@@ -1,0 +1,95 @@
+{
+  "profiles": [
+    {
+      "id": "pf109_aimor",
+      "name": "AEEZO / YHK PF109 (Aimor)",
+      "tested": true,
+      "match": {
+        "any_of": [
+          { "ro.es_frame.product": "PF109" },
+          { "ro.product.brand": "AEEZO", "ro.product.manufacturer": "YHK" }
+        ],
+        "packages": ["com.efercro.os.aimor"],
+        "usb_vid_pid": ["1F3A:1007"]
+      },
+      "device": {
+        "aimor_package": "com.efercro.os.aimor",
+        "image_dir": "/sdcard/aimor/image",
+        "aimor_db": "/data/data/com.efercro.os.aimor/databases/db_aimor.db",
+        "launcher_apk": "/system/priv-app/launcher_aimor/launcher_aimor.apk",
+        "photo_width": 1280,
+        "photo_height": 800,
+        "boot_hook": "setmacaddr",
+        "splash_patch": true,
+        "rclone_arch": "linux-arm"
+      },
+      "notes": "Allwinner A33, Android 6.0.1 eng build. Primary development target."
+    },
+    {
+      "id": "aimor_white_label",
+      "name": "White-label Aimor digital frame",
+      "tested": false,
+      "match": {
+        "packages": ["com.efercro.os.aimor"]
+      },
+      "device": {
+        "aimor_package": "com.efercro.os.aimor",
+        "image_dir": "/sdcard/aimor/image",
+        "aimor_db": "/data/data/com.efercro.os.aimor/databases/db_aimor.db",
+        "launcher_apk": "/system/priv-app/launcher_aimor/launcher_aimor.apk",
+        "photo_width": 1280,
+        "photo_height": 800,
+        "boot_hook": "setmacaddr",
+        "splash_patch": true,
+        "rclone_arch": "linux-arm"
+      },
+      "notes": "Many rebadged Chinese frames ship the Aimor slideshow app. Boot hook name may differ — verify with adb shell ls /system/bin."
+    },
+    {
+      "id": "allwinner_adb",
+      "name": "Allwinner Android frame (ADB, unknown app)",
+      "tested": false,
+      "match": {
+        "any_of": [
+          { "ro.board.platform": "astar" },
+          { "ro.board.platform": "exdroid" },
+          { "ro.sys.cputype": "*A33*" },
+          { "ro.sys.cputype": "*A64*" }
+        ],
+        "usb_vid_pid": ["1F3A:1007", "18D1:4EE7"]
+      },
+      "device": {
+        "aimor_package": "com.efercro.os.aimor",
+        "image_dir": "/sdcard/aimor/image",
+        "aimor_db": "/data/data/com.efercro.os.aimor/databases/db_aimor.db",
+        "launcher_apk": "/system/priv-app/launcher_aimor/launcher_aimor.apk",
+        "photo_width": 1280,
+        "photo_height": 800,
+        "boot_hook": "setmacaddr",
+        "splash_patch": false,
+        "rclone_arch": "linux-arm"
+      },
+      "notes": "Allwinner tablet/frame boards often expose ADB over USB. Slideshow app paths may need manual editing in nas.conf."
+    },
+    {
+      "id": "generic_android",
+      "name": "Generic Android picture frame",
+      "tested": false,
+      "match": {
+        "fallback": true
+      },
+      "device": {
+        "aimor_package": "com.efercro.os.aimor",
+        "image_dir": "/sdcard/aimor/image",
+        "aimor_db": "/data/data/com.efercro.os.aimor/databases/db_aimor.db",
+        "launcher_apk": "/system/priv-app/launcher_aimor/launcher_aimor.apk",
+        "photo_width": 1280,
+        "photo_height": 800,
+        "boot_hook": "setmacaddr",
+        "splash_patch": false,
+        "rclone_arch": "linux-arm"
+      },
+      "notes": "Fallback when no better match. Review generated nas.conf before relying on photo sync or splash patching."
+    }
+  ]
+}

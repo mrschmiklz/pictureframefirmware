@@ -1,12 +1,15 @@
-# Copy to frame.conf and edit for your network.
+# Copy to frame.conf and edit for your network (or run setup — auto-detection writes this).
 FRAME_IP=192.168.1.86
 FRAME_ADB_PORT=5555
-AGENT_PORT=8080
-AGENT_TOKEN=frame-local
+DEVICE_PROFILE=
 
 NAS_HOST=192.168.1.23
 NAS_SHARE=nas
 NAS_PHOTOS_PATH=framepics
 NAS_DEPLOY_PATH=frame-deploy
+NAS_CONSOLE_PATH=frame-console
+
+AGENT_PORT=8080
+AGENT_TOKEN=frame-local
 
 BOOT_SOURCE=\\192.168.1.23\nas\boot.png

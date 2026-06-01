@@ -6,9 +6,10 @@ param(
 
 $ErrorActionPreference = "Continue"
 $Root = Split-Path $PSScriptRoot -Parent
-. (Join-Path $PSScriptRoot "frame_adb.ps1")
+. (Join-Path $PSScriptRoot "frame_lib.ps1")
 $Adb = Get-FrameAdbPath -Preferred $Adb
 $cfg = Get-FrameConfig
+$profile = Get-FrameDeviceProfile -ProfileId $cfg.DeviceProfile
 
 $pass = 0
 $fail = 0
@@ -24,6 +25,10 @@ function Report {
 }
 
 Write-Host "=== Picture Frame System Test ==="
+Write-Host "Host OS: $(Get-FrameHostOs)"
+if ($profile) {
+    Write-Host "Device profile: $($profile.name) [$($profile.id)]$(if (-not $profile.tested) { ' (community/untested)' })"
+}
 Write-Host ""
 
 # PC-side checks
@@ -33,14 +38,14 @@ if (Test-Path $cfg.BootSource) {
     Report "FAIL" "Boot image missing: $($cfg.BootSource)"
 }
 
-$nasPhotos = "\\$($cfg.NasHost)\nas\framepics"
+$nasPhotos = Get-FrameNasUncPath -Cfg $cfg -SubPath $cfg.NasPhotosPath
 if (Test-Path $nasPhotos) {
     Report "PASS" "NAS photo share reachable: $nasPhotos"
 } else {
     Report "WARN" "NAS photo share not reachable from PC: $nasPhotos"
 }
 
-$nasDeploy = "\\$($cfg.NasHost)\nas\frame-deploy"
+$nasDeploy = Get-FrameNasUncPath -Cfg $cfg -SubPath $cfg.NasDeployPath
 if (Test-Path $nasDeploy) {
     $ver = Get-Content (Join-Path $nasDeploy "VERSION") -ErrorAction SilentlyContinue
     Report "PASS" "NAS deploy folder ready ($nasDeploy) version=$ver"
@@ -48,7 +53,7 @@ if (Test-Path $nasDeploy) {
     Report "WARN" "NAS deploy folder missing ($nasDeploy) - run publish_to_nas.ps1 after setup"
 }
 
-$nasConsole = "\\$($cfg.NasHost)\nas\frame-console"
+$nasConsole = Get-FrameNasUncPath -Cfg $cfg -SubPath $cfg.NasConsolePath
 if (Test-Path $nasConsole) {
     $pending = @(Get-ChildItem (Join-Path $nasConsole "queue\pending") -ErrorAction SilentlyContinue).Count
     $done = @(Get-ChildItem (Join-Path $nasConsole "queue\done") -ErrorAction SilentlyContinue).Count
@@ -114,6 +119,8 @@ if ($SkipDevice) {
     try {
         $serial = Connect-FrameDevice -Adb $Adb -Ip $cfg.FrameIp -Port $cfg.FrameAdbPort
         Report "PASS" "ADB connected: $serial"
+        $detect = Update-FrameConfigFromDevice -Adb $Adb -Serial $serial
+        Show-FrameDetectionReport -Detection $detect.Detection
 
         $checks = @(
             @{ Name = "boot hook"; Cmd = "test -x /system/bin/setmacaddr.real && echo yes || echo no" },

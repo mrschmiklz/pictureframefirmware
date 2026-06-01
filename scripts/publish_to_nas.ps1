@@ -1,7 +1,7 @@
 # Publish built firmware + scripts to NAS for over-the-air frame updates.
 param(
-    [string]$NasDeploy = "\\192.168.1.23\nas\frame-deploy",
-    [string]$NasConsole = "\\192.168.1.23\nas\frame-console",
+    [string]$NasDeploy = "",
+    [string]$NasConsole = "",
     [string]$Source = ""
 )
 
@@ -11,9 +11,14 @@ $BootDir = Join-Path $Root "boot"
 $Scripts = $PSScriptRoot
 $AgentDir = Join-Path $Root "frame-agent"
 
-. (Join-Path $Scripts "frame_adb.ps1")
+. (Join-Path $Scripts "frame_lib.ps1")
 $cfg = Get-FrameConfig
+$profile = Get-FrameDeviceProfile -ProfileId $cfg.DeviceProfile
 if (-not $Source) { $Source = $cfg.BootSource }
+if (-not $NasDeploy) { $NasDeploy = Get-FrameNasUncPath -Cfg $cfg -SubPath $cfg.NasDeployPath }
+if (-not $NasConsole) { $NasConsole = Get-FrameNasUncPath -Cfg $cfg -SubPath $cfg.NasConsolePath }
+
+Write-FrameNasConf -Cfg $cfg -Profile $profile | Out-Null
 
 Write-Host "Step 1/3: Build splash from $Source"
 & (Join-Path $Scripts "install_aimor_splash.ps1") -Source $Source -BuildOnly
