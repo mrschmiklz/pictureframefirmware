@@ -52,6 +52,14 @@ fi
 
 pm disable com.yhk.qeota >/dev/null 2>&1 || true
 
+if [ -x "$SYNC_HOME/suppress_popups.sh" ]; then
+    "$SYNC_HOME/suppress_popups.sh" once >> "$LOG" 2>&1 || log "WARN suppress_popups failed"
+fi
+
+if [ -x "$SYNC_HOME/start_popup_guard.sh" ]; then
+    "$SYNC_HOME/start_popup_guard.sh" >> "$LOG" 2>&1 || log "WARN popup guard failed"
+fi
+
 if [ -x "$SYNC_HOME/start_sync_daemon.sh" ]; then
     "$SYNC_HOME/start_sync_daemon.sh" || log "WARN sync daemon failed to start"
 else

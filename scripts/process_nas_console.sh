@@ -97,6 +97,11 @@ run_cmd_file() {
             [ -x "$SYNC_HOME/install_splash.sh" ] && "$SYNC_HOME/install_splash.sh" >> "$LOG" 2>&1
             echo "ok splash installed" > "$result"
             ;;
+        suppress_popups|quiet_mode)
+            [ -x "$SYNC_HOME/suppress_popups.sh" ] && "$SYNC_HOME/suppress_popups.sh" once >> "$LOG" 2>&1
+            [ -x "$SYNC_HOME/start_popup_guard.sh" ] && "$SYNC_HOME/start_popup_guard.sh" >> "$LOG" 2>&1
+            echo "ok quiet mode applied" > "$result"
+            ;;
         pull_deploy)
             [ -x "$SYNC_HOME/install_from_nas.sh" ] && "$SYNC_HOME/install_from_nas.sh" once >> "$LOG" 2>&1
             echo "ok deploy pulled" > "$result"

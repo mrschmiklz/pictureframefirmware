@@ -35,7 +35,7 @@ detect_with_python "$ADB" 1 >/dev/null
 echo "Pushing rclone..."
 "$ADB" -s "$serial" push "$RCLONE" /data/local/frame-sync/bin/rclone
 
-scripts=(nas.conf sync_nas.sh start_sync_daemon.sh block_wan.sh boot.sh install_from_nas.sh install_splash.sh restore_usb_adb.sh process_nas_console.sh start_agent.sh)
+scripts=(nas.conf sync_nas.sh start_sync_daemon.sh block_wan.sh boot.sh install_from_nas.sh install_splash.sh restore_usb_adb.sh process_nas_console.sh start_agent.sh suppress_popups.sh start_popup_guard.sh)
 for name in "${scripts[@]}"; do
   "$ADB" -s "$serial" push "$SCRIPT_DIR/$name" "/data/local/frame-sync/$name"
 done

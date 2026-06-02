@@ -16,7 +16,7 @@ Write-Host "Step 1/3: Deploy frame-sync scripts..."
 Write-Host "Step 2/3: Push firewall + boot scripts..."
 $scriptNames = @(
     "block_wan.sh", "boot.sh", "install_from_nas.sh", "install_splash.sh", "restore_usb_adb.sh",
-    "process_nas_console.sh", "start_agent.sh"
+    "process_nas_console.sh", "start_agent.sh", "suppress_popups.sh", "start_popup_guard.sh"
 )
 foreach ($name in $scriptNames) {
     Invoke-FrameAdb -Adb $Adb -Serial $serial -Args @("push", (Join-Path $scriptDir $name), "/data/local/frame-sync/$name")

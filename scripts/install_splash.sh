@@ -60,6 +60,7 @@ if [ -f "$prefs" ]; then
 fi
 
 if [ "$changed" = "1" ]; then
+    rm -f /sdcard/bootanimation.zip /sdcard/launcher_aimor.signed.apk 2>/dev/null
     echo "aimor_splash_installed"
     log "splash install complete"
     exit 0

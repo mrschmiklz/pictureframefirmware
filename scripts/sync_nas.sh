@@ -64,20 +64,24 @@ register_new_files() {
         media_path="/storage/emulated/0/aimor/image/$name"
         sqlite3 "$DB" "INSERT INTO MEDIA_BEAN (DEST_FILE_NAME,MEDIA_TYPE,IS_DISPLAY,TITLE,U_ID,MEDIA_PATH,IS_AUTO_PLAY,DURATION,MUTE,SCALE_TYPE,MAX_SCALE,MIN_SCALE,M_MULTIPLE,FOCUS_X,FOCUS_Y,TAKEN_PIC_TIME,UPLOAD_TIME,UPLOAD_TIME_LONG,PHOTO_WIDTH,PHOTOHEIGHT,LIKED,GROUP_LABEL) VALUES ('$esc_name',0,0,'$esc_name',0,'$media_path',0,0.0,0,1,1.0,1.0,1.0,0.5,0.5,$now_ms,'$upload_time',$now_ms,$PHOTO_WIDTH,$PHOTO_HEIGHT,0,'');"
         log "registered $name"
+        PHOTOS_CHANGED=1
     done
 }
 
 remove_missing_files() {
     [ "$MIRROR_MODE" = "1" ] || return 0
 
-    sqlite3 "$DB" "SELECT DEST_FILE_NAME FROM MEDIA_BEAN;" | while read name; do
+    list="$SYNC_HOME/tmp/media_names.list"
+    sqlite3 "$DB" "SELECT DEST_FILE_NAME FROM MEDIA_BEAN;" > "$list"
+    while read name; do
         [ -n "$name" ] || continue
         if [ ! -f "$IMAGE_DIR/$name" ]; then
             esc_name=$(sql_escape "$name")
             sqlite3 "$DB" "DELETE FROM MEDIA_BEAN WHERE DEST_FILE_NAME='$esc_name';"
             log "removed missing $name"
+            PHOTOS_CHANGED=1
         fi
-    done
+    done < "$list"
 }
 
 refresh_aimor() {
@@ -130,9 +134,14 @@ run_sync_once() {
     }
     flatten_nested_sync
 
+    PHOTOS_CHANGED=0
     register_new_files
     remove_missing_files
-    refresh_aimor
+    if [ "$PHOTOS_CHANGED" = "1" ]; then
+        refresh_aimor
+    else
+        log "no photo changes; skipping Aimor restart"
+    fi
 
     if [ -x "$SYNC_HOME/install_from_nas.sh" ]; then
         "$SYNC_HOME/install_from_nas.sh" once >> "$LOG" 2>&1 || log "WARN deploy check failed"

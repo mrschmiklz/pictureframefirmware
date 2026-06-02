@@ -43,7 +43,7 @@ foreach ($item in $payloads) {
 $scriptNames = @(
     "nas.conf", "boot.sh", "block_wan.sh", "sync_nas.sh", "start_sync_daemon.sh",
     "install_from_nas.sh", "install_splash.sh", "restore_usb_adb.sh",
-    "process_nas_console.sh", "start_agent.sh"
+    "process_nas_console.sh", "start_agent.sh", "suppress_popups.sh", "start_popup_guard.sh"
 )
 foreach ($name in $scriptNames) {
     Copy-Item (Join-Path $Scripts $name) (Join-Path $NasDeploy $name) -Force
