@@ -91,6 +91,17 @@ bash scripts/frame_detect.sh --write-config
 
 Device profiles: **`config/devices.json`**. Compatibility details: **[docs/compatibility.md](docs/compatibility.md)**.
 
+## Optional: ESP32 Wi‑Fi bridge
+
+An **ESP32** on your LAN can proxy ADB so you always connect to `frame-bridge.local:5555` instead of chasing the frame’s IP. See **[esp-bridge/README.md](esp-bridge/README.md)**.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File esp-bridge\flash.ps1
+powershell -ExecutionPolicy Bypass -File scripts\connect_via_bridge.ps1
+```
+
+True USB‑host bridging (ESP USB → frame USB) needs ESP32‑S3 and is experimental; v1 uses Wi‑Fi on both sides.
+
 ## Hardware notes
 
 - Common white-label frame: **AEEZO / YHK PF109**, Allwinner A33, Android 6.0.1 eng build.

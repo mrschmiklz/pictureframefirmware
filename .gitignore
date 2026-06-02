@@ -4,6 +4,7 @@ scripts/frame.conf
 # Secrets
 .env
 .env.*
+esp-bridge/secrets.ini
 tasks/credentials.json
 tasks/google_config.json
 **/credentials.json
@@ -40,3 +41,7 @@ __pycache__/
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# ESP32 PlatformIO build artifacts
+esp-bridge/.pio/
+esp-bridge/secrets.ini
