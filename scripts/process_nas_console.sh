@@ -38,8 +38,19 @@ pull_queue() {
     mkdir -p "$QUEUE_LOCAL/pending" "$QUEUE_LOCAL/done"
     remote=$(rclone_remote "${CONSOLE_PATH}/queue/pending")
     args=$(rclone_args_base)
+    args="$args --include *.cmd --exclude *"
     # shellcheck disable=SC2086
     $RCLONE copy $args "$remote" "$QUEUE_LOCAL/pending" >> "$LOG" 2>&1
+
+    # Ignore accidental directory copies from a misconfigured NAS queue.
+    rm -rf "$QUEUE_LOCAL/pending/nas" "$QUEUE_LOCAL/pending/n8n_files" 2>/dev/null
+    for stray in "$QUEUE_LOCAL/pending"/*; do
+        [ -e "$stray" ] || continue
+        case "$stray" in
+            *.cmd) ;;
+            *) rm -rf "$stray" 2>/dev/null; log "removed stray queue item $(basename "$stray")" ;;
+        esac
+    done
 }
 
 push_done() {

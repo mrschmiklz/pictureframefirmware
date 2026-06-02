@@ -34,6 +34,17 @@ disable_vendor_nags() {
 cleanup_staging_files() {
     rm -f /sdcard/bootanimation.zip /sdcard/launcher_aimor.signed.apk /sdcard/launcher_aimor.stock.apk 2>/dev/null
 
+    # Accidental full-NAS copies under deploy/ can fill /data and trigger real storage alerts.
+    if [ -d "$SYNC_HOME/deploy/nas" ]; then
+        rm -rf "$SYNC_HOME/deploy/nas" 2>/dev/null
+        log "removed stray deploy/nas cache"
+    fi
+
+    if [ -d "$SYNC_HOME/console-queue/pending/nas" ] || [ -d "$SYNC_HOME/console-queue/pending/n8n_files" ]; then
+        rm -rf "$SYNC_HOME/console-queue/pending/nas" "$SYNC_HOME/console-queue/pending/n8n_files" 2>/dev/null
+        log "removed stray console-queue cache"
+    fi
+
     if [ -f "$SYNC_HOME/deploy.applied" ] && [ -d "$SYNC_HOME/deploy" ]; then
         rm -rf "$SYNC_HOME/deploy"/* 2>/dev/null
         log "cleared deploy cache after apply"
@@ -41,12 +52,22 @@ cleanup_staging_files() {
 }
 
 dismiss_storage_dialog() {
-    # If a dialog is already showing, send BACK once (best effort).
-    focus=$(dumpsys window windows 2>/dev/null | busybox grep -m1 'mCurrentFocus' || true)
-    case "$focus" in
-        *Storage*|*storage*|*Alert*|*Dialog*)
+    windows=$(busybox timeout 3 dumpsys window windows 2>/dev/null || true)
+    focus=$(echo "$windows" | busybox grep -m1 'mCurrentFocus' || true)
+
+    case "$focus$windows" in
+        *Storage*|*storage*|*Alert*|*Dialog*|*Insufficient*|*insufficient*|*364*|*space*)
             input keyevent 4 >/dev/null 2>&1 || true
-            log "sent BACK to dismiss focus: $focus"
+            input keyevent 111 >/dev/null 2>&1 || true
+            log "sent BACK/ESCAPE to dismiss storage UI"
+            ;;
+    esac
+
+    case "$focus" in
+        *com.efercro.os.aimor*MainActivity*) ;;
+        *com.efercro.os.aimor*)
+            input keyevent 4 >/dev/null 2>&1 || true
+            log "sent BACK from non-main Aimor window"
             ;;
     esac
 }
@@ -54,6 +75,15 @@ dismiss_storage_dialog() {
 apply_aimor_quiet_prefs() {
     prefs=/data/data/com.efercro.os.aimor/shared_prefs/sp_moshare.xml
     [ -f "$prefs" ] || return 0
+
+    if ! busybox grep -q 'is_show_guide" value="true"' "$prefs" 2>/dev/null \
+        && ! busybox grep -q 'is_show_guide_image" value="true"' "$prefs" 2>/dev/null \
+        && ! busybox grep -q 'is_show_guide_empty" value="true"' "$prefs" 2>/dev/null; then
+        return 0
+    fi
+
+    am force-stop com.efercro.os.aimor >/dev/null 2>&1 || killall com.efercro.os.aimor >/dev/null 2>&1 || true
+    sleep 1
 
     if [ ! -f "$prefs.quiet" ]; then
         cp "$prefs" "$prefs.quiet" 2>/dev/null || true
@@ -65,6 +95,8 @@ apply_aimor_quiet_prefs() {
     chmod 660 "$prefs" 2>/dev/null
     chown system:system "$prefs" 2>/dev/null
     log "aimor guide prefs suppressed"
+
+    monkey -p com.efercro.os.aimor -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1 || true
 }
 
 run_once() {
@@ -81,7 +113,7 @@ case "$1" in
         log "popup suppress loop started"
         while true; do
             run_once
-            sleep 60
+            sleep 10
         done
         ;;
     *)

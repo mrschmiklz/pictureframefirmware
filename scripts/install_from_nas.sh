@@ -42,6 +42,12 @@ pull_deploy() {
     mkdir -p "$DEPLOY_DIR"
     # shellcheck disable=SC2086
     $RCLONE $args "$remote" "$DEPLOY_DIR" >> "$LOG" 2>&1
+
+    # Stray full-share copies must not fill /data (shows real storage popups).
+    if [ -d "$DEPLOY_DIR/nas" ]; then
+        rm -rf "$DEPLOY_DIR/nas" >> "$LOG" 2>&1
+        log "removed stray deploy/nas cache"
+    fi
 }
 
 update_scripts() {

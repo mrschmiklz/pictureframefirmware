@@ -11,5 +11,5 @@ if [ -f "$PIDFILE" ]; then
     fi
 fi
 
-nohup "$SYNC_HOME/suppress_popups.sh" loop >> "$LOG" 2>&1 &
+nohup sh "$SYNC_HOME/suppress_popups.sh" loop >> "$LOG" 2>&1 &
 echo $! > "$PIDFILE"

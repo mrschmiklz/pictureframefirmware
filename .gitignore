@@ -45,3 +45,5 @@ Thumbs.db
 # ESP32 PlatformIO build artifacts
 esp-bridge/.pio/
 esp-bridge/secrets.ini
+esp-bridge/tools/cp210x/*.zip
+driver_install.log

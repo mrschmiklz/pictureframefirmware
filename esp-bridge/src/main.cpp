@@ -198,8 +198,9 @@ void setup() {
   Serial.println("\nPicture Frame ESP Bridge (Wi-Fi ADB proxy)");
 
   loadConfig();
-  setupHttp();
+  // WebServer binds to lwIP; Wi-Fi must be started first or the chip reboot-loops.
   connectWifi();
+  setupHttp();
 
   if (wifiReady) {
     bridgeServer = new WiFiServer(cfgBridgePort);

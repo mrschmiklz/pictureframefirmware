@@ -92,6 +92,38 @@ reboot
 pio run -e esp32-s3-devkitc-1 -t upload
 ```
 
+## Flash troubleshooting (Windows)
+
+### 1. CP210x driver shows **Unknown** in Device Manager
+
+Many ESP32 boards use a **Silicon Labs CP210x** USB chip. Without the driver, COM ports do not work.
+
+1. Right-click **`esp-bridge\INSTALL_DRIVER.cmd`** → **Run as administrator** → click **Yes** on UAC.
+2. Device Manager should show **Silicon Labs CP210x** with status **OK** and a COM port (e.g. COM6).
+3. Flash:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File esp-bridge\flash.ps1
+   ```
+
+### 2. Upload fails or port not found — use **BOOT + RESET**
+
+Most ESP32 dev boards have **BOOT** (GPIO0) and **EN/RST** buttons:
+
+1. Hold **BOOT**
+2. Tap **EN** (reset) once
+3. Release **BOOT**
+4. Run `flash.ps1` within a few seconds (PlatformIO auto-resets after upload starts)
+
+Use a **data** USB cable (not charge-only). Plug directly into the PC if a hub acts flaky.
+
+### 3. Wrong COM port
+
+If several `CP210x (COMx)` entries appear, unplug other CP210 devices or specify the port:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File esp-bridge\flash.ps1 -Port COM6
+```
+
 ## Split to its own repo?
 
 This folder is self‑contained. You can copy `esp-bridge/` to a new GitHub repo anytime; the main picture frame repo treats it as an optional companion.
